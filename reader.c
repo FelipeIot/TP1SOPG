@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -16,7 +17,7 @@ int main(void)
 	uint8_t inputBuffer[BUFFER_SIZE];
 	int32_t bytesRead, returnCode, fd;
 	FILE * ftext;
-    
+ 	uint8_t selector[5];   
     	/* Create named fifo. -1 means already exists so no action if already exists */
     	if ( (returnCode = mknod(FIFO_NAME, S_IFIFO | 0666, 0) ) < -1  )
     	{
@@ -56,8 +57,18 @@ int main(void)
         	else
 		{
 			inputBuffer[bytesRead] = '\0';
-			printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
-			fprintf (ftext, "%s \n",inputBuffer);
+			strncpy(selector,inputBuffer,4);
+			selector[4]='\0';
+			if(selector[0] == 'D')
+			{
+				printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
+				fprintf (ftext, "%s \n",selector);
+				printf("%s \n\r",selector);
+			}
+			else
+			{	
+				printf("caso raro \n\r");
+			}
 			
 		}
 	}
