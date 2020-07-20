@@ -25,6 +25,15 @@ void pepito(int sig)
 
 }
 
+void user2(int sig)
+{
+        permiso=0;      
+        sprintf(outputBuffer,"SIGN:2 ");
+
+
+}
+
+
 
 
 int main(void)
@@ -35,7 +44,15 @@ int main(void)
 	sa.sa_flags = 0; // SA_RESTART; //
 	sigemptyset(&sa.sa_mask);
 
-	sigaction(SIGUSR1,&sa,NULL);   
+	sigaction(SIGUSR1,&sa,NULL);
+
+        struct sigaction se;
+        permiso=1;
+        se.sa_handler = user2;
+        se.sa_flags = 0; // SA_RESTART; //
+        sigemptyset(&se.sa_mask);
+
+        sigaction(SIGUSR2,&se,NULL);      
 
 
     	//char outputBuffer[BUFFER_SIZE];
