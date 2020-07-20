@@ -33,7 +33,7 @@ int main(void)
         	exit(1);
     	}
 	/*Aqui creo si no encuentro  el archivo donde voy a escribir los datos recibidos*/
-	ftext = fopen("tf.txt", "a");
+	ftext = fopen("Log.txt", "a");
 	/*if(ftext)
 	{
 		printf("El archivo existe \n");
@@ -62,8 +62,8 @@ int main(void)
 			if(selector[0] == 'D')
 			{
 				printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
-				fprintf (ftext, "%s \n",selector);
-				printf("%s \n\r",selector);
+				fprintf (ftext, "%s \n",inputBuffer);
+				printf("%s \n\r",inputBuffer);
 			}
 			else
 			{	
