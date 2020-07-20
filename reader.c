@@ -17,6 +17,7 @@ int main(void)
 	uint8_t inputBuffer[BUFFER_SIZE];
 	int32_t bytesRead, returnCode, fd;
 	FILE * ftext;
+	FILE * fl;
  	uint8_t selector[5];   
     	/* Create named fifo. -1 means already exists so no action if already exists */
     	if ( (returnCode = mknod(FIFO_NAME, S_IFIFO | 0666, 0) ) < -1  )
@@ -33,7 +34,19 @@ int main(void)
         	exit(1);
     	}
 	/*Aqui creo si no encuentro  el archivo donde voy a escribir los datos recibidos*/
-	ftext = fopen("Log.txt", "a");
+	if((fl = fopen("SIG.txt", "a"))==NULL)
+	{
+		printf("ERROR CREACION SIG:TXT");
+		exit(0);
+	}
+
+        if((ftext = fopen("Log.txt", "a"))==NULL)
+        {
+                printf("ERROR CREACION LOG:TXT");
+                exit(0);
+        }
+
+
 	/*if(ftext)
 	{
 		printf("El archivo existe \n");
@@ -64,6 +77,13 @@ int main(void)
 				printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
 				fprintf (ftext, "%s \n",inputBuffer);
 				printf("%s \n\r",inputBuffer);
+			}
+			else if(selector[0]=='S')
+			{
+                                printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
+                                fprintf (fl, "%s \n",inputBuffer);
+                                printf("%s \n\r",inputBuffer);
+	
 			}
 			else
 			{	
