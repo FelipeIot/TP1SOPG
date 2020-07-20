@@ -15,6 +15,7 @@ int main(void)
 {
    
     char outputBuffer[BUFFER_SIZE];
+    char outputBufferAux[BUFFER_SIZE];	
 	uint32_t bytesWrote;
 	int32_t returnCode, fd;
 
@@ -40,8 +41,8 @@ int main(void)
 	while (1)
 	{
         /* Get some text from console */
-		fgets(outputBuffer, BUFFER_SIZE, stdin);
-        
+		fgets(outputBufferAux, BUFFER_SIZE, stdin);
+        	sprintf(outputBuffer,"DATA:%s",outputBufferAux);
         /* Write buffer to named fifo. Strlen - 1 to avoid sending \n char */
 		if ((bytesWrote = write(fd, outputBuffer, strlen(outputBuffer)-1)) == -1)
         {
