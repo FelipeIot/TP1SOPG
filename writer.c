@@ -7,24 +7,49 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <signal.h>
+
 
 #define FIFO_NAME "myfifo"
 #define BUFFER_SIZE 300
 
+char outputBuffer[BUFFER_SIZE];
+uint32_t bytesWrote;
+int32_t fd;
+uint8_t permiso;
+void pepito(int sig)
+{
+	permiso=0;	
+	sprintf(outputBuffer,"SIGN:1 ");
+	
+
+}
+
+
+
 int main(void)
 {
-   
-    char outputBuffer[BUFFER_SIZE];
-    char outputBufferAux[BUFFER_SIZE];	
-	uint32_t bytesWrote;
-	int32_t returnCode, fd;
+	struct sigaction sa;
+	permiso=1;
+	sa.sa_handler = pepito;
+	sa.sa_flags = 0; // SA_RESTART; //
+	sigemptyset(&sa.sa_mask);
 
-    /* Create named fifo. -1 means already exists so no action if already exists */
-    if ( (returnCode = mknod(FIFO_NAME, S_IFIFO | 0666, 0) ) < -1 )
-    {
-        printf("Error creating named fifo: %d\n", returnCode);
-        exit(1);
-    }
+	sigaction(SIGUSR1,&sa,NULL);   
+
+
+    	//char outputBuffer[BUFFER_SIZE];
+    	char outputBufferAux[BUFFER_SIZE];	
+	//uint32_t bytesWrote;
+	int32_t returnCode;
+	//int32_t fd;
+
+    	/* Create named fifo. -1 means already exists so no action if already exists */
+    	if ( (returnCode = mknod(FIFO_NAME, S_IFIFO | 0666, 0) ) < -1 )
+    	{
+        	printf("Error creating named fifo: %d\n", returnCode);
+        	exit(1);
+    	}
 
     /* Open named fifo. Blocks until other process opens it */
 	printf("waiting for readers...\n");
@@ -42,15 +67,21 @@ int main(void)
 	{
         /* Get some text from console */
 		fgets(outputBufferAux, BUFFER_SIZE, stdin);
-        	sprintf(outputBuffer,"DATA:%s",outputBufferAux);
+        	if(permiso)
+		{
+			sprintf(outputBuffer,"DATA:%s",outputBufferAux);
+		}
+		
         /* Write buffer to named fifo. Strlen - 1 to avoid sending \n char */
 		if ((bytesWrote = write(fd, outputBuffer, strlen(outputBuffer)-1)) == -1)
         {
 			perror("write");
+			permiso=1;
         }
         else
         {
 			printf("writer: wrote %d bytes\n", bytesWrote);
+			permiso=1;
         }
 	}
 	return 0;
