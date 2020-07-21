@@ -11,6 +11,9 @@
 
 #define FIFO_NAME "myfifo"
 #define BUFFER_SIZE 300
+#define DESTINODATOS 	"Log.txt"
+#define DESTINOSIGNAL 	"Sign.txt"
+#define NCARACTERESFILTRO 4
 
 int main(void)
 {
@@ -19,7 +22,9 @@ int main(void)
 	FILE * ftext;
 	FILE * fl;
 
- 	uint8_t selector[5];   
+ 	uint8_t selector[NCARACTERESFILTRO];
+	uint8_t aux[NCARACTERESFILTRO];   
+
     	/* Create named fifo. -1 means already exists so no action if already exists */
     	if ( (returnCode = mknod(FIFO_NAME, S_IFIFO | 0666, 0) ) < -1  )
     	{
@@ -35,13 +40,13 @@ int main(void)
         	exit(1);
     	}
 	/*Aqui creo si no encuentro  el archivo donde voy a escribir los datos recibidos*/
-	if((fl = fopen("Sign.txt", "a"))==NULL)
+	if((fl = fopen(DESTINOSIGNAL, "a"))==NULL)
 	{
 		printf("ERROR CREACION Sign.txt");
 		exit(0);
 	}
 
-        if((ftext = fopen("Log.txt", "a"))==NULL)
+        if((ftext = fopen(DESTINODATOS, "a"))==NULL)
         {
                 printf("ERROR CREACION Log.txt");
                 exit(0);
@@ -62,19 +67,18 @@ int main(void)
         	else
 		{
 			inputBuffer[bytesRead] = '\0';
-			strncpy(selector,inputBuffer,4);
-			selector[4]='\0';
-			if(selector[0] == 'D')
+			strncpy(selector,inputBuffer,NCARACTERESFILTRO);
+			selector[NCARACTERESFILTRO] = '\0';
+			sprintf(aux,"%s",selector);	
+			if(!strncmp(selector,"DATA",NCARACTERESFILTRO))
 			{
 				printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
 				fprintf (ftext, "%s \n",inputBuffer);
-				printf("%s \n\r",inputBuffer);
 			}
-			else if(selector[0]=='S')
+			else if(!strncmp(selector,"SIGN",NCARACTERESFILTRO))
 			{
                                 printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
                                 fprintf (fl, "%s \n",inputBuffer);
-                                printf("%s \n\r",inputBuffer);
 	
 			}
 			else
