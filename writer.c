@@ -99,5 +99,7 @@ int main(void)
 			permiso=1;
         	}
 	}
+	//close named fifo	
+	close(fd);
 	return 0;
 }

@@ -92,6 +92,11 @@ int main(void)
 		}
 	}
 	while (bytesRead > 0);
+	//close name fifo
+	close(fd);
+	//close files
+	close(fl);
+	close(ftext);
 
 	return 0;
 }
