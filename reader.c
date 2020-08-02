@@ -18,15 +18,14 @@
 int main(void)
 {
 	uint8_t inputBuffer[BUFFER_SIZE];
-	int32_t bytesRead, returnCode, fd;
-	FILE * ftext;
-	FILE * fl;
+	int32_t bytesRead, returnCode, fd,ftext,fl;
 
- 	uint8_t selector[NCARACTERESFILTRO];
-	uint8_t aux[NCARACTERESFILTRO];   
+
+ 	//uint8_t selector[NCARACTERESFILTRO];
+	//uint8_t aux[NCARACTERESFILTRO];   
 
     	/* Create named fifo. -1 means already exists so no action if already exists */
-    	if ( (returnCode = mknod(FIFO_NAME, S_IFIFO | 0666, 0) ) < -1  )
+    	if ( (returnCode = mknod(FIFO_NAME, S_IFIFO | 0777, 0) ) < -1  )
     	{
         	printf("Error creating named fifo: %d\n", returnCode);
         	exit(1);
@@ -40,13 +39,13 @@ int main(void)
         	exit(1);
     	}
 	/*Aqui creo si no encuentro  el archivo donde voy a escribir los datos recibidos*/
-	if((fl = fopen(DESTINOSIGNAL, "a"))==NULL)
+	if((fl = open(DESTINOSIGNAL,  O_CREAT | O_RDWR | O_APPEND, S_IRUSR | S_IWUSR))<0)
 	{
 		printf("ERROR CREACION Sign.txt");
 		exit(0);
 	}
 
-        if((ftext = fopen(DESTINODATOS, "a"))==NULL)
+        if((ftext = open(DESTINODATOS, O_CREAT | O_RDWR | O_APPEND, S_IRUSR | S_IWUSR))<0)
         {
                 printf("ERROR CREACION Log.txt");
                 exit(0);
@@ -67,18 +66,22 @@ int main(void)
         	else
 		{
 			inputBuffer[bytesRead] = '\0';
-			strncpy(selector,inputBuffer,NCARACTERESFILTRO);
-			selector[NCARACTERESFILTRO] = '\0';
-			sprintf(aux,"%s",selector);	
-			if(!strncmp(selector,"DATA",NCARACTERESFILTRO))
+			//strncpy(selector,inputBuffer,NCARACTERESFILTRO);
+			//selector[NCARACTERESFILTRO] = '\0';
+			//sprintf(aux,"%s",selector);	
+			if (strstr((char *)inputBuffer,"DATA") != NULL)
 			{
+				
+				write(ftext, (char *)inputBuffer, strlen((char *)inputBuffer));
+				write(ftext, "\r\n", strlen("\r\n"));
 				printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
-				fprintf (ftext, "%s \n",inputBuffer);
 			}
-			else if(!strncmp(selector,"SIGN",NCARACTERESFILTRO))
+			else if ( strstr((char *)inputBuffer, "SIGN") != NULL )
 			{
-                                printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
-                                fprintf (fl, "%s \n",inputBuffer);
+                                
+                          	write(fl, (char *)inputBuffer, strlen((char *)inputBuffer));
+				write(fl, "\r\n", strlen("\r\n"));
+				printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
 	
 			}
 			else
