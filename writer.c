@@ -13,22 +13,47 @@
 #define FIFO_NAME "myfifo"
 #define BUFFER_SIZE 300
 
+#define MESGUSR1 "SIGN:1 "
+#define MESGUSR2 "SIGN:2 "
+
 char outputBuffer[BUFFER_SIZE];
-uint8_t permiso;
+uint32_t bytesWrote;
+int32_t fd;
+
+
 void user1(int sig)
 {
-	permiso=0;	
-	sprintf(outputBuffer,"SIGN:1 ");
+		
+	
+	if ((bytesWrote = write(fd, MESGUSR1, strlen(MESGUSR1)-1)) == -1)
+        {
+		perror("write");
+		
+        }
+        else
+        {
+		printf("writer: wrote %d bytes\n", bytesWrote);
+		
+        }
 	
 
 }
 
 void user2(int sig)
 {
-        permiso=0;      
-        sprintf(outputBuffer,"SIGN:2 ");
-
-
+       
+       
+	if ((bytesWrote = write(fd, MESGUSR2, strlen(MESGUSR2)-1)) == -1)
+        {
+		perror("write");
+		
+        }
+        else
+        {
+		printf("writer: wrote %d bytes\n", bytesWrote);
+		
+        }
+	
 }
 
 
@@ -38,7 +63,7 @@ int main(void)
 {
 	//Configuración de receptores de señales del sistema
 	struct sigaction sa;
-	permiso=1;
+	
 	sa.sa_handler = user1;
 	sa.sa_flags = 0; // SA_RESTART; //
 	sigemptyset(&sa.sa_mask);
@@ -53,11 +78,11 @@ int main(void)
         sigaction(SIGUSR2,&se,NULL);      
 
 
-    	permiso=1;
+   
     	char outputBufferAux[BUFFER_SIZE];	
-	uint32_t bytesWrote;
+	
 	int32_t returnCode;
-	int32_t fd;
+	
 
     	/* Create named fifo. -1 means already exists so no action if already exists */
     	if ( (returnCode = mknod(FIFO_NAME, S_IFIFO | 0666, 0) ) < -1 )
@@ -80,24 +105,22 @@ int main(void)
     	/* Loop forever */
 	while (1)
 	{
-        /* Get some text from console */
-		fgets(outputBufferAux, BUFFER_SIZE, stdin);
-        	if(permiso)
-		{
+        	/* Get some text from console */
+		if(NULL!=(fgets(outputBufferAux, BUFFER_SIZE, stdin)))
+        	{
 			sprintf(outputBuffer,"DATA:%s",outputBufferAux);
-		}
 		
-        	/* Write buffer to named fifo. Strlen - 1 to avoid sending \n char */
-		if ((bytesWrote = write(fd, outputBuffer, strlen(outputBuffer)-1)) == -1)
-        	{
-			perror("write");
-			permiso=1;
-        	}
-        	else
-        	{
-			printf("writer: wrote %d bytes\n", bytesWrote);
-			permiso=1;
-        	}
+			
+			/* Write buffer to named fifo. Strlen - 1 to avoid sending \n char */
+			if ((bytesWrote = write(fd, outputBuffer, strlen(outputBuffer)-1)) == -1)
+			{
+				perror("write");
+			}
+			else
+			{
+				printf("writer: wrote %d bytes\n", bytesWrote);
+			}
+		}
 	}
 	//close named fifo	
 	close(fd);
