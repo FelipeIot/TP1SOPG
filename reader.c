@@ -18,7 +18,7 @@
 int main(void)
 {
 	uint8_t inputBuffer[BUFFER_SIZE];
-	int32_t bytesRead, returnCode, fd,ftext,fl;
+	int32_t bytesRead,bytesWrote, returnCode, fd,ftext,fl;
 
 
  	//uint8_t selector[NCARACTERESFILTRO];
@@ -66,21 +66,33 @@ int main(void)
         	else
 		{
 			inputBuffer[bytesRead] = '\0';
-			//strncpy(selector,inputBuffer,NCARACTERESFILTRO);
-			//selector[NCARACTERESFILTRO] = '\0';
-			//sprintf(aux,"%s",selector);	
+	
 			if (strstr((char *)inputBuffer,"DATA") != NULL)
 			{
 				
-				write(ftext, (char *)inputBuffer, strlen((char *)inputBuffer));
-				write(ftext, "\r\n", strlen("\r\n"));
+				if((bytesWrote=write(ftext, (char *)inputBuffer, strlen((char *)inputBuffer)))==-1)
+				{
+					perror("write");
+				}
+				if((bytesWrote=write(ftext, "\r\n", strlen("\r\n")))==-1)
+				{
+					perror("write");
+				}
+			
 				printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
 			}
 			else if ( strstr((char *)inputBuffer, "SIGN") != NULL )
 			{
                                 
-                          	write(fl, (char *)inputBuffer, strlen((char *)inputBuffer));
-				write(fl, "\r\n", strlen("\r\n"));
+                          	
+				if((bytesWrote=write(fl, (char *)inputBuffer, strlen((char *)inputBuffer)))==-1)
+				{
+					perror("write");
+				}				
+				if((bytesWrote=write(fl, "\r\n", strlen("\r\n")))==-1)
+				{
+					perror("write");
+				}	
 				printf("reader: read %d bytes: \"%s\"\n", bytesRead, inputBuffer);
 	
 			}
